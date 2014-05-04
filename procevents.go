@@ -6,7 +6,7 @@ import (
 
 type Conn struct {
 	sock  int
-	evbuf []interface{}
+	evbuf []Event
 }
 
 func Dial() (*Conn, error) {
@@ -27,7 +27,7 @@ func Dial() (*Conn, error) {
 	return &Conn{sock: sock}, nil
 }
 
-func (c *Conn) Read() (interface{}, error) {
+func (c *Conn) Read() (Event, error) {
 
 	for len(c.evbuf) == 0 {
 		buf := make([]byte, 1<<16)

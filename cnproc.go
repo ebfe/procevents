@@ -87,7 +87,7 @@ func cnProcMcastIgnore(sock int) error {
 	return cnProcMcastOp(sock, procCnMcastIgnore)
 }
 
-func parseProcEvent(msg *syscall.NetlinkMessage) (interface{}, error) {
+func parseProcEvent(msg *syscall.NetlinkMessage) (Event, error) {
 	cnmsg := (*C.struct_cn_msg)(unsafe.Pointer(&msg.Data[0]))
 	pe := (*C.struct_proc_event)(unsafe.Pointer(&cnmsg.data))
 
