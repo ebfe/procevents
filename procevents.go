@@ -64,20 +64,63 @@ func (c *Conn) Close() error {
 	return syscall.Close(c.sock)
 }
 
-type Event struct {
-	What      uint32
-	Cpu       uint32
-	Timestamp uint64
-	Pid       int
-	Tgid      int
+type Header struct {
+	what      uint32
+	cpu       uint32
+	timestamp uint64
+	pid       int32
+	tgid      int32
 }
 
-type Fork Event
-type Exec Event
-type Uid Event
-type Gid Event
-type Sid Event
-type Ptrace Event
-type Comm Event
-type Coredump Event
-type Exit Event
+func (h Header) What() uint32      { return h.what }
+func (h Header) Cpu() uint32       { return h.cpu }
+func (h Header) Timestamp() uint64 { return h.timestamp }
+func (h Header) Pid() int32        { return h.pid }
+func (h Header) Tgid() int32       { return h.tgid }
+
+type Fork struct {
+	Header
+	ChildPid  int32
+	ChildTgid int32
+}
+
+type Exec struct {
+	Header
+}
+
+type Uid struct {
+	Header
+	Ruid uint32
+	Euid uint32
+}
+
+type Gid struct {
+	Header
+	Rgid uint32
+	Egid uint32
+}
+
+type Sid struct {
+	Header
+}
+
+type Ptrace struct {
+	Header
+	TracerPid  int32
+	TracerTgid int32
+}
+
+type Comm struct {
+	Header
+	Comm [16]byte
+}
+
+type Coredump struct {
+	Header
+}
+
+type Exit struct {
+	Header
+	Code   uint32
+	Signal uint32
+}

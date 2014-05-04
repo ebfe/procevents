@@ -91,31 +91,25 @@ func parseProcEvent(msg *syscall.NetlinkMessage) (interface{}, error) {
 	cnmsg := (*C.struct_cn_msg)(unsafe.Pointer(&msg.Data[0]))
 	pe := (*C.struct_proc_event)(unsafe.Pointer(&cnmsg.data))
 
-	ev := Event{
-		What:      uint32(pe.what),
-		Cpu:       uint32(pe.cpu),
-		Timestamp: uint64(pe.timestamp_ns),
-	}
-
 	switch pe.what {
 	case C.PROC_EVENT_FORK:
-		return Fork(ev), nil
+		return *(*Fork)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_EXEC:
-		return Exec(ev), nil
+		return *(*Exec)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_UID:
-		return Uid(ev), nil
+		return *(*Uid)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_GID:
-		return Gid(ev), nil
+		return *(*Gid)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_SID:
-		return Sid(ev), nil
+		return *(*Sid)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_PTRACE:
-		return Ptrace(ev), nil
+		return *(*Ptrace)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_COMM:
-		return Comm(ev), nil
+		return *(*Comm)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_COREDUMP:
-		return Coredump(ev), nil
+		return *(*Coredump)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_EXIT:
-		return Exit(ev), nil
+		return *(*Exit)(unsafe.Pointer(pe)), nil
 	default:
 		return nil, fmt.Errorf("procevents: unknown event type (%x)", pe.what)
 	}
