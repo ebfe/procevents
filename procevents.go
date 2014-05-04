@@ -64,6 +64,14 @@ func (c *Conn) Close() error {
 	return syscall.Close(c.sock)
 }
 
+type Event interface {
+	What() uint32
+	Cpu() uint32
+	Timestamp() uint64
+	Pid() int32
+	Tgid() int32
+}
+
 type Header struct {
 	what      uint32
 	cpu       uint32
