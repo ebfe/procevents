@@ -45,6 +45,11 @@ func (c *Conn) Read() (Event, error) {
 		}
 
 		for i := range msgs {
+			switch msgs[i].Header.Type {
+			case syscall.NLMSG_ERROR, syscall.NLMSG_NOOP, syscall.NLMSG_OVERRUN:
+				continue
+			}
+
 			ev, err := parseProcEvent(&msgs[i])
 			if err != nil {
 				return nil, err
