@@ -5,7 +5,6 @@ package procevents
 
 import (
 	"fmt"
-	"os"
 	"syscall"
 	"unsafe"
 )
@@ -44,8 +43,8 @@ func cnSocket() (int, error) {
 }
 
 func cnBind(sock int, groups uint32) error {
-	sa := syscall.SockaddrNetlink{Family: syscall.AF_NETLINK, Groups: groups, Pid: uint32(os.Getpid())}
-	if err := syscall.Bind(sock, &sa); err != nil {
+	sa := &syscall.SockaddrNetlink{Family: syscall.AF_NETLINK, Groups: groups, Pid: 0}
+	if err := syscall.Bind(sock, sa); err != nil {
 		syscall.Close(sock)
 		return fmt.Errorf("procevents: bind: %s", err)
 	}
@@ -53,11 +52,17 @@ func cnBind(sock int, groups uint32) error {
 }
 
 func cnProcMcastOp(sock int, op procCnMcastOp) error {
+	s, err := syscall.Getsockname(sock)
+	if err != nil {
+		return err
+	}
+	portid := s.(*syscall.SockaddrNetlink).Pid
+
 	msg := procEventMcastMsg{}
 	msg.nlhdr.nlmsg_type = syscall.NLMSG_DONE
 	msg.nlhdr.nlmsg_flags = 0
 	msg.nlhdr.nlmsg_seq = 0
-	msg.nlhdr.nlmsg_pid = C.__u32(os.Getpid())
+	msg.nlhdr.nlmsg_pid = C.__u32(portid)
 
 	msg.cnhdr.id.idx = cnIdxProc
 	msg.cnhdr.id.val = cnValProc
@@ -71,7 +76,7 @@ func cnProcMcastOp(sock int, op procCnMcastOp) error {
 	msg.nlhdr.nlmsg_len = C.__u32(unsafe.Sizeof(msg.cnhdr)) + C.__u32(msg.cnhdr.len)
 
 	raw := C.GoBytes(unsafe.Pointer(&msg), C.int(unsafe.Sizeof(msg)))
-	_, err := syscall.Write(sock, raw)
+	_, err = syscall.Write(sock, raw)
 	if err != nil {
 		syscall.Close(sock)
 		return fmt.Errorf("procevents: write: %s", err)
