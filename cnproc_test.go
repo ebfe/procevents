@@ -1,4 +1,4 @@
-package procevents 
+package procevents
 
 import (
 	"os"
@@ -29,4 +29,3 @@ func TestMultipleSockets(t *testing.T) {
 		}
 	}
 }
-
