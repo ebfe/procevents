@@ -1,12 +1,18 @@
 package procevents 
 
 import (
+	"os"
 	"syscall"
 	"testing"
 )
 
 func TestMultipleSockets(t *testing.T) {
 	var s [3]int
+
+	if os.Getuid() != 0 {
+		t.Skip("uid != 0")
+		return
+	}
 
 	for i := range s {
 		var err error
