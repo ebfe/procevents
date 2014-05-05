@@ -5,8 +5,7 @@ import (
 )
 
 type Conn struct {
-	sock  int
-	evbuf []Event
+	sock int
 }
 
 func Dial() (*Conn, error) {
@@ -27,41 +26,34 @@ func Dial() (*Conn, error) {
 	return &Conn{sock: sock}, nil
 }
 
-func (c *Conn) Read() (Event, error) {
+func (c *Conn) Read() ([]Event, error) {
 
-	for len(c.evbuf) == 0 {
-		buf := make([]byte, 1<<16)
-		n, _, err := syscall.Recvfrom(c.sock, buf, 0)
-		if err != nil {
-			return nil, err
-		}
-		if n < syscall.NLMSG_HDRLEN {
+	buf := make([]byte, 1<<16)
+	n, _, err := syscall.Recvfrom(c.sock, buf, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	msgs, err := syscall.ParseNetlinkMessage(buf[:n])
+	if err != nil {
+		return nil, err
+	}
+
+	events := make([]Event, 0, len(msgs))
+	for i := range msgs {
+		switch msgs[i].Header.Type {
+		case syscall.NLMSG_ERROR, syscall.NLMSG_NOOP, syscall.NLMSG_OVERRUN:
 			continue
 		}
 
-		msgs, err := syscall.ParseNetlinkMessage(buf[:n])
+		ev, err := parseProcEvent(&msgs[i])
 		if err != nil {
 			return nil, err
 		}
-
-		for i := range msgs {
-			switch msgs[i].Header.Type {
-			case syscall.NLMSG_ERROR, syscall.NLMSG_NOOP, syscall.NLMSG_OVERRUN:
-				continue
-			}
-
-			ev, err := parseProcEvent(&msgs[i])
-			if err != nil {
-				return nil, err
-			}
-			c.evbuf = append(c.evbuf, ev)
-		}
+		events = append(events, ev)
 	}
 
-	ev := c.evbuf[0]
-	c.evbuf = c.evbuf[1:]
-
-	return ev, nil
+	return events, nil
 }
 
 func (c *Conn) Close() error {
