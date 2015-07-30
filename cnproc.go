@@ -68,14 +68,14 @@ func cnProcMcastOp(sock int, op procCnMcastOp) error {
 	msg.cnhdr.id.val = cnValProc
 	msg.cnhdr.seq = 0
 	msg.cnhdr.ack = 0
-	msg.cnhdr.len = C.__u16(unsafe.Sizeof(msg.op))
+	msg.cnhdr.len = C.__u16(C.sizeof_enum_proc_cn_mcast_op)
 	msg.cnhdr.flags = 0
 
 	msg.op = uint32(op)
 
-	msg.nlhdr.nlmsg_len = C.__u32(unsafe.Sizeof(msg.cnhdr)) + C.__u32(msg.cnhdr.len)
+	msg.nlhdr.nlmsg_len = C.__u32(C.sizeof_struct_nlmsghdr + C.sizeof_struct_cn_msg + C.sizeof_enum_proc_cn_mcast_op)
 
-	raw := C.GoBytes(unsafe.Pointer(&msg), C.int(unsafe.Sizeof(msg)))
+	raw := C.GoBytes(unsafe.Pointer(&msg), C.int(msg.nlhdr.nlmsg_len))
 	_, err = syscall.Write(sock, raw)
 	if err != nil {
 		syscall.Close(sock)
