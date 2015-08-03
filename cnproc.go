@@ -97,6 +97,8 @@ func parseProcEvent(msg *syscall.NetlinkMessage) (Event, error) {
 	pe := (*C.struct_proc_event)(unsafe.Pointer(&cnmsg.data))
 
 	switch pe.what {
+	case C.PROC_EVENT_NONE:
+		return *(*None)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_FORK:
 		return *(*Fork)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_EXEC:

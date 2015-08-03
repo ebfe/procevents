@@ -83,6 +83,11 @@ func (h Header) Timestamp() uint64 { return h.timestamp }
 func (h Header) Pid() int32        { return h.pid }
 func (h Header) Tgid() int32       { return h.tgid }
 
+type None struct {
+	Header
+	Err uint32
+}
+
 type Fork struct {
 	Header
 	ChildPid  int32
