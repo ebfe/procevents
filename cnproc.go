@@ -94,7 +94,9 @@ func cnProcMcastIgnore(sock int) error {
 
 func parseProcEvent(msg *syscall.NetlinkMessage) (Event, error) {
 	cnmsg := (*C.struct_cn_msg)(unsafe.Pointer(&msg.Data[0]))
-	pe := (*C.struct_proc_event)(unsafe.Pointer(&cnmsg.data))
+	ptr := uintptr(unsafe.Pointer(cnmsg))
+	ptr += unsafe.Sizeof(*cnmsg)
+	pe := (*C.struct_proc_event)(unsafe.Pointer(ptr))
 
 	switch pe.what {
 	case C.PROC_EVENT_NONE:
