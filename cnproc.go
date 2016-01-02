@@ -112,8 +112,8 @@ func parseProcEvent(msg *syscall.NetlinkMessage) (Event, error) {
 		return *(*Ptrace)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_COMM:
 		return *(*Comm)(unsafe.Pointer(pe)), nil
-	case C.PROC_EVENT_COREDUMP:
-		return *(*Coredump)(unsafe.Pointer(pe)), nil
+	//case C.PROC_EVENT_COREDUMP:
+	//	return *(*Coredump)(unsafe.Pointer(pe)), nil
 	case C.PROC_EVENT_EXIT:
 		return *(*Exit)(unsafe.Pointer(pe)), nil
 	default:
